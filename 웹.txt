@@ -1,0 +1,47 @@
+# nginx 종료할 떄
+C: \nginx-1.18.0>nginx.exe -s stop
+
+웹(WEB)
+: 비정형 데이터 수집
+: 지식+크롤링(동적, 브라우저 제어 - 셀런) + 스크래핑(정적, -BS)
+
+Front-End(client side)           :             Back-End(server side)                                 <-> DB
+--------------- --------------------------------------------------------------------------
+browser(html)                                  web server(정적페이지 처리) - nginx
+html = (html, css, script)       :             web application server(WAS)
+.jsp , .asp , .php                   :             jsp, servlet, applet, nodeJS
+                                                     c#, (Django, Flast) - MVT(웹클라이언트 <-> View <-> Model, Template ), MVC FrameWork
+bootstrap(반응형 웹)            :             *장고실습은 URL을 통해 만들어진 앱을 연결하고 앱이 뷰를 찾고 함수가 호출되서 서버가 출력
+                                        :
+presentation Layer(로직 X)    :             Business Layer(logic) , Persistence Layer(DB)  
+-> 풀 스택 개발자
+
+
+html : tag + text = element
+
+# ul : unoder list(순서가 없다)
+# li : list
+<body>
+          <ul 속성 = value>text</ul>
+</body>
+
+
+#browser
+#http:// server ip : port / xxxx.html
+
+http://localhost:7777/sample.html
+
+#URL
+#POST방식
+http://localhost/sample.html
+
+#GET방식
+http://localhost/sample.html?id=jslim&pwd=jslim
+<-             url               ->?<- querystring ->
+
+
+script -> 오픈 소스 리스트
+->D3.js (j쿼리,앵귤러,등이 있음)
+
+
+

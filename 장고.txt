@@ -1,0 +1,197 @@
+mkdir 폴더
+cd 폴더
+
+# Project 생성
+>django-admin startproject 프로젝트이름
+
+cd 폴더
+
+이후 settings 스크립트에서 TIME_ZONE = 'Asia/Seoul' 입력, DEBUG = TRUE 입력
+
+
+# App 생성
+>python manage.py startapp 앱 이름
+
+
+이후 장고웹 settings 스크립트 Installed_apps 에 앱이름추가 'PollsApp'
+
+이후 장고웹 urls에 path추가 path('polls/', include('PollsApp.urls'))     
+
+이후 pollsApp디렉토리에 urls 스크립트 새로 생성하고 장고웹 url스크립트에서 from django.contrib import admin
+                                                                                                          from django.urls import path , include 복붙하고 from PollsApp import views새로 추가해서
+그다음 path부분도 양식 참고해서 path('index/', views.index, name = 'index') 로 넣기
+
+이후 PollsApp디렉토리 views스크립트에 함수생성 def index(request) :
+                                                                    return HttpResponse('테스트 링크~ 잘 되나요')   하고 from django.http import HttpResponse 작성
+
+
+# Server 실행하는 명령어
+>python manage.py runserver
+
+# 사용자 주소접속 확인
+http://localhost:8000/hello/index/
+
+이후 PollsApp models스크립트에서 클래스 생성
+
+class Question(models.Model) :
+    question_text = models.CharField(max_length=200)
+    regdate       = models.DateTimeField('date published')
+
+    def __str__(self):
+        return self.question_text
+
+class Choice(models.Model) :
+    question      = models.ForeignKey(Question, on_delete=models.CASCADE())
+    choice_text   = models.CharField(max_length=200)
+    votes         = models.IntegerField(default=0)
+
+    def __str__(self):
+        return str(self.question)+" , "+self.choice_text+" , "+str(self.votes)
+
+이후 PollsApp admin스크립트에서 from .models import * 추가하고 만든 클래스대로  admin.site.register(Question)  추가
+                                                                                                                   admin.site.register(Choice)
+
+이후 서버를 끄고
+# 모델 마이그레이션
+# 사용자 모델 -> DB(테이블)만드는 명령어
+>python manage.py makemigrations
+>python manage.py migrate
+
+>python manage.py createsuperuser (어드민 계정 처음만들때 필요)
+
+다시 서버키고 http://localhost:8000/admin/ 접속해서 테이블확인
+이후 question에 add를 눌러 설문작성
+
+pollsApp view스크립트에서 return HttpResponse('테스트 링크~ 잘 되나요') 참조처리하고
+from .models import * 추가,    lists = Question.objects.all()
+                                          context = {'lists': lists}
+                                           return render(request, 'polls/index.html', context)   추가
+
+이후에 PollsApp디렉토리에 templates라는 새 디렉토리생성, templates디렉토리안에 polls 디렉토리 생성
+
+이후에 Polls디렉토리에 index.html 생성하고 바디에
+     {% if lists %}
+     <ul>
+         {% for question  in lists %}
+         <li><a href="">{{ question.question_text }} </a> </li>
+         {% endfor %}
+     </ul>
+     {% endif %} 입력
+
+이후 어드민페이지로 접속하고 choice로 들어가 설문 응답 추가
+
+이후 index.html에서 <a href="../{{ question.id }}"> 입력
+
+이후 PollsApp urls 스크립트에서 path('<int:question_id>/', views.choice , name = 'choice') 경로추가 
+
+이후 PollsApp view스크립트에 def choice(request , question_id): 
+                                          print('param question_id', str(question_id)) 추가
+                                          lists = get_object_or_404(Question, pk=question_id)
+                                          context = {'clist' :lists}
+                                          return render(request, 'polls/choice.html' , context) 작성하고 import에 render 외 get_object_or_404 추가
+
+이후 polls디렉토리밑에 choice html 생성하여 바디에  
+        <h1>{{ clist.question_text }}</h1>
+        <hr/>
+        <form method="post" action="{% url 'vote' %}">
+            {% csrf_token %}
+        {% for choice in clist.choice_set.all %}
+        <input type="radio"
+               name="choice"
+               value="{{clist.id}}">
+
+        <label>{{ choice.choice_text }} </label> <br/>
+        {% endfor %}
+        <p/>
+        <input type="submit" value="VOTE">    
+        </form> 입력
+
+이후 PollsApp url스크립트에 path('vote/', views.vote , name = 'vote') 경로추가하고 
+
+이후 PollsApp views스크립트에 def vote(request) :
+                                           return render(request, 'polls/result.html', context)   입력
+
+이후 Polls디렉토리 밑에 result.html생성 
+           
+이후 PollsApp views 스크립트에서 def vote함수에
+    choice = request.POST['choice']
+    question_id = request.POST['question_id']
+    print('param value choice- ', str(choice))
+    print('param value question_id - ', str(question_id))
+    context = {}       추가
+
+이후 choice.html에서 <input type="hidden" name="question_id" value="{{choice.id}}" /"을 {% csrf_token %} 밑에 추가
+
+이후 PollsApp views스크립트에서 
+
+    question = get_object_or_404(Question, pk=question_id)
+    checked_choice = question.choice_set.get(pk=choice)
+    checked_choice.votes += 1
+    checked_choice.save()                                               추가하고
+
+return render(request, 'polls/result.html' , context) 숨기고 대신 return HttpResponseRedirect(reverse('polls:result' , arg=(question.id, ) ) ) 입력하고 위에 import 옆에 HttpResponseRedirect추가
+밑줄에 from django.urls import reverse 추가
+
+이후에 PollsApp url스크립트로 가서 path('result/', views.result , name = 'result') 경로작성
+
+이후에 PollsApp views스크립트에    def result(request) :
+                                                 print('--------         views.result')  추가하고
+
+또한 return HttpResponseRedirect(reverse('polls:result' , arg=(question.id, ) )) 숨기고 redirect('result') 입력
+print('--------         views.result')밑에
+    context = {}
+    return(request, 'polls/result.html', context)   추가 
+
+이후에 result html로 이동해서 
+      <h1> {{question.question_text}} </h1>
+      <hr/>
+      <ul>
+          {% for choice in question.choice_set.all %}
+          <li>{{choice.choice_text}} - {{choice.votes}}</li>
+          {% endfor %}
+      </ul>
+      <p/>
+      <a href="{% url 'index' %}">첫 페이지로 이동</a>  입력
+
+이후에 PollsApp.view에서 def vote~ context={}밑에 request.session['question_id'] = question_id 입력
+
+
+def result 밑에는 
+def result(request) :
+    question_id = request.session['question_id']
+    print('--------         views.result' , str(question_id))
+    question = get_object_or_404(Question, pk=question_id)
+    context = {'question' : question}
+    return render(request, 'polls/result.html', context) 로 입력
+
+위에는 import render옆에 get_object_or_404와 redirect 추가
+
+
+*참고
+templates
+- html(tag + text)
+- {{print}}
+- {% 동적 코드를 작성하고자 할 때 %}
+- {% 프레젠테이션 레이어에 로직을 심을 수 있다 %}
+
+*참고
+views.py 3가지 방식
+-HttpResponse (비권장)
+-render( , templates(html), context) - forword방식
+context에 데이터를 심으면 해당 데이터는 요청된 페이지내에서만 사용이 가능한 scope 가지게된다.
+session  심어서 데이터 사용 범위를 모든 템플릿에서 사용할 수 있는 데이터로 저장해야한다.
+
+-redirect( 새로운 request url 요청할 수 있게 된다)
+
+
+# static파일을 한곳으로 모을때
+>python manage.py collectstatic
+
+# {% load static %}
+------------------------------------------------------home.html
+# {% include 'header.html' %}
+   {% block content %}
+                <section></section>
+   {% endblock %}
+   {% include 'footer.html' %}
+------------------------------------------------------
